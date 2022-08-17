@@ -1,15 +1,25 @@
-use std::{io::{stdout, Write, stdin}, process::Command};
+use std::io::{stdout, Write, stdin};
+use std::process::Command;
+use colored::Colorize;
 
 fn main() {
     loop {
         let command = get_command();
-        let mut child = Command::new(command).spawn().unwrap();
-        child.wait().unwrap();
+        match Command::new(command).spawn() {
+            Ok(mut child) => {
+                child.wait().unwrap();
+            },
+            Err(e) => {
+                println!("Error: {}", format!("{e}").bold().on_red())
+            }
+        }
+        
     }
 }
 
 fn get_command() -> String {
-    print!("##> ");
+    let prefix = format!("{}@{}", whoami::username(), whoami::devicename()).bold().underline().green();
+    print!("{}", format!("{} ##>", prefix).bold().cyan());
     stdout().flush().unwrap();
     let mut buf = String::new();
     stdin().read_line(&mut buf).unwrap();
