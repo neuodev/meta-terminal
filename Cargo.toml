@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 colored = "2.0.0"
 whoami = "1.2.1"
+console = "0.15.1"
