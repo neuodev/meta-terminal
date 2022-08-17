@@ -5,8 +5,6 @@ use console::{Term, Key};
 use std::path::Path;
 use std::process::Command;
 
-// Search
-// History
 fn main() {
     let mut commands: Vec<String> = Vec::new();
 
@@ -14,21 +12,11 @@ fn main() {
         let command = get_command(&mut commands);
 
         match command {
-            Action::Down => {
-                println!("Got down arrow")
-            }
-            Action::Up => {
-                println!("Got up arrow")
-            }
-
             Action::Command(command) => {
-                // commands.push(command.clone());
-                // curr_idx+= 1;
                 apply_command(&command);
-            }
+            },
+            _ => {}
         }
-
-        println!("{:#?}", commands);
     }
 }
 
@@ -68,7 +56,24 @@ fn get_command(commands: &mut Vec<String>) -> Action {
 
                 return Action::Up
             },
-            Key::ArrowDown => return Action::Down,
+            Key::ArrowDown => {
+                if commands.len() <= idx + 1  {
+                    term.clear_line().unwrap();
+                    term.write_all(format!("{} {}", prefix, command).as_bytes(),).unwrap();
+                    idx = 0;
+                    continue;
+                }
+
+                if let Some(command) = commands.get(idx + 1) {
+                    term.clear_line().unwrap();
+                    term.write_all(format!("{} {}", prefix, command).as_bytes(),).unwrap();
+                    idx+= 1;
+                    command_choosed = Some(command.clone());
+                    continue;
+                }
+
+                return Action::Down
+            },
             Key::Enter => {
                 if let Some(command) = command_choosed {
                     println!("\n");
