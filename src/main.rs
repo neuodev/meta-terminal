@@ -1,6 +1,6 @@
 use colored::Colorize;
 use std::env;
-use std::io::{stdin, stdout, Write};
+use std::io::{stdin, stdout, Write, Error};
 use std::path::Path;
 use std::process::Command;
 fn main() {
@@ -15,24 +15,25 @@ fn main() {
         let args = parts;
 
         match command {
-            "cb" => {
+            "cd" => {
                 let new_dir = args.peekable().peek().map_or("/", |x| *x);
                 let root = Path::new(new_dir);
+                if let Err(e) = env::set_current_dir(&root) {
+                    eprint(e);
+                }
             }
             command => match Command::new(command).args(args).spawn() {
                 Ok(mut child) => {
                     child.wait().unwrap();
                 }
-                Err(e) => {
-                    println!("{}", format!("Error: {e}").bold().on_red())
-                }
+                Err(e) => eprint(e)
             },
         }
     }
 }
 
 fn get_command() -> String {
-    let path = env::var("PWD").expect("PWD not found");
+    let path = env::current_dir().unwrap().display().to_string();
     let crr_dir = path.split("/").last().unwrap();
     let path = format!("{}", crr_dir).bold().yellow().underline();
     let prefix = format!("{}@{}", whoami::username(), whoami::devicename())
@@ -45,4 +46,9 @@ fn get_command() -> String {
     stdin().read_line(&mut buf).unwrap();
 
     buf.trim().to_string()
+}
+
+
+fn eprint(e: Error) {
+    println!("{}", format!("Error: {e}").bold().on_red())
 }
